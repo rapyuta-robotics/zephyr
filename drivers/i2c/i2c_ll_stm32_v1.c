@@ -21,8 +21,6 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(i2c_ll_stm32_v1);
 
-#define I2C_STM32_TRANSFER_TIMEOUT_MSEC  15
-
 #include "i2c_ll_stm32.h"
 #include "i2c-priv.h"
 

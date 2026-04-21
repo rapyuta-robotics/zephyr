@@ -133,6 +133,9 @@ struct i2c_stm32_data {
 #endif /* CONFIG_I2C_STM32_V2_DMA */
 #endif /* CONFIG_I2C_RTIO */
 
+	/** Runtime-configurable I2C transfer timeout in milliseconds.
+	 *  Initialised to I2C_STM32_TRANSFER_TIMEOUT_MSEC (default 500).
+	 */
 	uint32_t transfer_timeout_ms;
 
 #ifdef CONFIG_I2C_TARGET

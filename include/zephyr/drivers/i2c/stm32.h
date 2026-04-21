@@ -10,6 +10,10 @@
 
 #include <zephyr/device.h>
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 enum i2c_stm32_mode {
 	I2CSTM32MODE_I2C,
 	I2CSTM32MODE_SMBUSHOST,
@@ -18,6 +22,8 @@ enum i2c_stm32_mode {
 };
 
 void i2c_stm32_set_smbus_mode(const struct device *dev, enum i2c_stm32_mode mode);
+void i2c_stm32_set_transfer_timeout(const struct device *dev, uint32_t timeout_ms);
+uint32_t i2c_stm32_get_transfer_timeout(const struct device *dev);
 
 #ifdef CONFIG_SMBUS_STM32_SMBALERT
 typedef void (*i2c_stm32_smbalert_cb_func_t)(const struct device *dev);
@@ -27,5 +33,9 @@ void i2c_stm32_smbalert_set_callback(const struct device *dev, i2c_stm32_smbaler
 void i2c_stm32_smbalert_enable(const struct device *dev);
 void i2c_stm32_smbalert_disable(const struct device *dev);
 #endif /* CONFIG_SMBUS_STM32_SMBALERT */
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* ZEPHYR_INCLUDE_DRIVERS_I2C_STM32_H_ */
