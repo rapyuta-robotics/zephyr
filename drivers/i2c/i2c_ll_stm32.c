@@ -339,6 +339,7 @@ static int i2c_stm32_init(const struct device *dev)
 
 	data->is_configured = false;
 	data->mode = I2CSTM32MODE_I2C;
+	data->transfer_timeout_ms = I2C_STM32_TRANSFER_TIMEOUT_MSEC;
 
 	/*
 	 * initialize mutex used when multiple transfers
@@ -389,6 +390,20 @@ static int i2c_stm32_init(const struct device *dev)
 	data->is_configured = true;
 
 	return 0;
+}
+
+void i2c_stm32_set_transfer_timeout(const struct device *dev, uint32_t timeout_ms)
+{
+	struct i2c_stm32_data *data = dev->data;
+
+	data->transfer_timeout_ms = timeout_ms;
+}
+
+uint32_t i2c_stm32_get_transfer_timeout(const struct device *dev)
+{
+	struct i2c_stm32_data *data = dev->data;
+
+	return data->transfer_timeout_ms;
 }
 
 #ifdef CONFIG_SMBUS_STM32_SMBALERT

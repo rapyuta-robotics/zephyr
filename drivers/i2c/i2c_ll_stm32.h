@@ -9,6 +9,11 @@
 #ifndef ZEPHYR_DRIVERS_I2C_I2C_LL_STM32_H_
 #define ZEPHYR_DRIVERS_I2C_I2C_LL_STM32_H_
 
+/* Default I2C transfer timeout (can be overridden per-driver variant) */
+#ifndef I2C_STM32_TRANSFER_TIMEOUT_MSEC
+#define I2C_STM32_TRANSFER_TIMEOUT_MSEC 500
+#endif
+
 #include <zephyr/drivers/i2c/stm32.h>
 #include <zephyr/kernel.h>
 #include <zephyr/devicetree.h>
@@ -127,6 +132,8 @@ struct i2c_stm32_data {
 	struct dma_block_config dma_blk_cfg;
 #endif /* CONFIG_I2C_STM32_V2_DMA */
 #endif /* CONFIG_I2C_RTIO */
+
+	uint32_t transfer_timeout_ms;
 
 #ifdef CONFIG_I2C_TARGET
 	bool master_active;

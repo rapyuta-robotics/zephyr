@@ -21,10 +21,10 @@
 #include <zephyr/logging/log.h>
 LOG_MODULE_REGISTER(i2c_ll_stm32_v1);
 
+#define I2C_STM32_TRANSFER_TIMEOUT_MSEC  15
+
 #include "i2c_ll_stm32.h"
 #include "i2c-priv.h"
-
-#define I2C_STM32_TRANSFER_TIMEOUT_MSEC  15
 
 #define I2C_STM32_TIMEOUT_USEC  1000
 #define I2C_REQUEST_WRITE       0x00
@@ -653,7 +653,7 @@ static int32_t i2c_stm32_msg_write(const struct device *dev, struct i2c_msg *msg
 	i2c_stm32_enable_transfer_interrupts(dev);
 
 	if (k_sem_take(&data->device_sync_sem,
-			K_MSEC(I2C_STM32_TRANSFER_TIMEOUT_MSEC)) != 0) {
+			K_MSEC(data->transfer_timeout_ms)) != 0) {
 		LOG_DBG("%s: WRITE timeout", __func__);
 		i2c_stm32_reset(dev);
 		return -EIO;
@@ -675,7 +675,7 @@ static int32_t i2c_stm32_msg_read(const struct device *dev, struct i2c_msg *msg,
 	LL_I2C_EnableIT_RX(i2c);
 
 	if (k_sem_take(&data->device_sync_sem,
-			K_MSEC(I2C_STM32_TRANSFER_TIMEOUT_MSEC)) != 0) {
+			K_MSEC(data->transfer_timeout_ms)) != 0) {
 		LOG_DBG("%s: READ timeout", __func__);
 		i2c_stm32_reset(dev);
 		return -EIO;
