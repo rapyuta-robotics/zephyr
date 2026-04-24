@@ -623,8 +623,10 @@ int i2c_stm32_error(const struct device *dev)
 
 	if (LL_I2C_IsActiveFlag_BERR(i2c)) {
 		LL_I2C_ClearFlag_BERR(i2c);
-		data->current.is_err = 1U;
-		goto end;
+		/* STM32F405 Errata ES0182 2.10.1: Spurious Bus Error detection in Master mode.
+		 * Workaround: clear the flag and let the transfer continue.
+		 */
+		return 0;
 	}
 
 #if defined(CONFIG_SMBUS_STM32_SMBALERT)
