@@ -593,6 +593,8 @@ void i2c_stm32_event(const struct device *dev)
 		LL_I2C_DisableIT_BUF(i2c);
 	} else if (LL_I2C_IsActiveFlag_RXNE(i2c) && !data->current.is_write) {
 		handle_rxne(dev);
+	} else if (LL_I2C_IsActiveFlag_RXNE(i2c) && data->current.is_write) {
+		LL_I2C_DisableIT_BUF(i2c);
 	}
 }
 
