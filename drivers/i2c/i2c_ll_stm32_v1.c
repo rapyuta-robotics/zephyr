@@ -325,6 +325,9 @@ static inline void handle_txe(const struct device *dev)
 		LL_I2C_TransmitData8(i2c, *data->current.buf);
 		data->current.buf++;
 	} else {
+		/* All bytes sent. Disable the BUF interrupt so the level-triggered
+		 * TXE flag cannot re-fire the ISR while completing the transfer.
+		 */
 		LL_I2C_DisableIT_BUF(i2c);
 		if (data->current.flags & I2C_MSG_STOP) {
 			LL_I2C_GenerateStopCondition(i2c);
@@ -642,8 +645,15 @@ int i2c_stm32_error(const struct device *dev)
 #endif
 	return 0;
 end:
+#if defined(CONFIG_I2C_TARGET)
+	if (!data->slave_attached || data->master_active) {
+		i2c_stm32_disable_transfer_interrupts(dev);
+		i2c_stm32_master_mode_end(dev);
+	}
+#else
 	i2c_stm32_disable_transfer_interrupts(dev);
 	i2c_stm32_master_mode_end(dev);
+#endif
 	return -EIO;
 }
 
