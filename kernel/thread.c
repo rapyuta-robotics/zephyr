@@ -586,6 +586,29 @@ char *z_setup_new_thread(struct k_thread *new_thread,
 
 	Z_ASSERT_VALID_PRIO(prio, entry);
 
+	/*
+	 * When CONFIG_FPU and CONFIG_FPU_SHARING are both enabled, the
+	 * compiler may emit FP instructions in any thread — including
+	 * kernel-internal threads like main and sysworkq — even without
+	 * explicit floating-point operations in the source (GCC >= 9 uses
+	 * FP registers for spills and struct copies with -mfloat-abi=hard).
+	 *
+	 * On Cortex-M, arch_new_thread() reads K_FP_REGS at creation time
+	 * to size the MPU stack guard (FP_GUARD_EXTRA_SIZE) and set
+	 * Z_ARM_MODE_MPU_GUARD_FLOAT_Msk.  If K_FP_REGS is absent here,
+	 * the guard is sized too small and z_arm_mpu_stack_guard_and_fpu_adjust()
+	 * can only retroactively correct it at the *next* context switch —
+	 * opening the ES0182 lazy-FPU-stacking race window for any ISR that
+	 * arrives before that switch.
+	 *
+	 * Force K_FP_REGS for all threads when this config is active so the
+	 * correct guard size and FP context tracking are in place before the
+	 * first instruction of the new thread executes.
+	 */
+#if defined(CONFIG_FPU) && defined(CONFIG_FPU_SHARING)
+	options |= K_FP_REGS;
+#endif
+
 #ifdef CONFIG_THREAD_ABORT_NEED_CLEANUP
 	k_thread_abort_cleanup_check_reuse(new_thread);
 #endif /* CONFIG_THREAD_ABORT_NEED_CLEANUP */
