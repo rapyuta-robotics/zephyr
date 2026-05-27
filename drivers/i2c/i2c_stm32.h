@@ -62,6 +62,7 @@ struct i2c_stm32_config {
 	size_t pclk_len;
 	I2C_TypeDef *i2c;
 	uint32_t bitrate;
+	k_ticks_t transfer_timeout_ticks;
 	const struct pinctrl_dev_config *pcfg;
 #if DT_HAS_COMPAT_STATUS_OKAY(st_stm32_i2c_v2)
 	const struct i2c_config_timing *timings;
@@ -72,6 +73,16 @@ struct i2c_stm32_config {
 	struct stream rx_dma;
 #endif /* CONFIG_I2C_STM32_V2_DMA */
 };
+
+/**
+ * @brief Return the per-bus transfer timeout as a k_timeout_t.
+ *
+ * The ticks value is pre-computed at build time; no runtime conversion.
+ */
+static inline k_timeout_t i2c_stm32_transfer_timeout(const struct i2c_stm32_config *cfg)
+{
+	return (k_timeout_t)Z_TIMEOUT_TICKS_INIT(cfg->transfer_timeout_ticks);
+}
 
 struct i2c_stm32_data {
 #ifdef CONFIG_I2C_RTIO
