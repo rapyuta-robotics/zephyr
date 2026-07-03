@@ -180,16 +180,23 @@ uint32_t z_arm_mpu_stack_guard_and_fpu_adjust(struct k_thread *thread)
 	    ((thread->arch.mode_exc_return & EXC_RETURN_FTYPE) == 0)) {
 		/* The thread has been pre-tagged (at creation or later) with
 		 * K_FP_REGS, i.e. it is expected to be using the FPU registers
-		 * (if not already). Activate lazy stacking and program a large
-		 * MPU guard to safely detect privilege thread stack overflows.
+		 * (if not already). Program a large MPU guard to safely detect
+		 * privilege thread stack overflows.
 		 *
 		 * OR
 		 * The thread is not pre-tagged with K_FP_REGS, but it has
-		 * generated an FP context. Activate lazy stacking and
-		 * program a large MPU guard to detect privilege thread
-		 * stack overflows.
+		 * generated an FP context. Program a large MPU guard to detect
+		 * privilege thread stack overflows.
+		 *
+		 * ES0182 fix: do NOT re-enable lazy stacking (LSPEN) here.
+		 * PRE_KERNEL_1 clears LSPEN at boot (eager stacking). Re-enabling
+		 * it at every K_FP_REGS context switch re-opens the ES0182 race
+		 * window: a nested ISR during the fault handler's LOG_ERR call
+		 * writes FPU regs to the wrong exception-frame offset, corrupting
+		 * the stacked PC and causing cascading INVSTATE/INVPC/MPU faults.
+		 * Eager stacking costs ~2.5 µs per ISR entry with FPU active but
+		 * is unconditionally safe on Cortex-M4. See Zephyr issue #108793.
 		 */
-		FPU->FPCCR |= FPU_FPCCR_LSPEN_Msk;
 
 		z_arm_thread_stack_info_adjust(thread, true);
 
